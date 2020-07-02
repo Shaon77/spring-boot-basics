@@ -4,15 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.shaon.basics.data.IngredientRepository;
 import org.shaon.basics.models.Ingredient;
 import org.shaon.basics.models.Ingredient.Type;
+import org.shaon.basics.models.Order;
 import org.shaon.basics.models.Taco;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -22,6 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Controller
 @RequestMapping("/design")
+@SessionAttributes("order")
 public class DesignTacoController {
 
     private final IngredientRepository ingredientRepo;
@@ -29,6 +28,15 @@ public class DesignTacoController {
     @Autowired
     public DesignTacoController(IngredientRepository ingredientRepo) {
         this.ingredientRepo = ingredientRepo;
+    }
+
+    @ModelAttribute(name = "order")
+    public Order order() {
+        return new Order();
+    }
+    @ModelAttribute(name = "taco")
+    public Taco taco() {
+        return new Taco();
     }
 
     @ModelAttribute
@@ -54,12 +62,11 @@ public class DesignTacoController {
 
     @GetMapping
     public String showDesignForm(Model model) {
-        model.addAttribute("design", new Taco());
         return "design";
     }
 
     @PostMapping
-    public String processDesign(@Valid @ModelAttribute("design") Taco design, Errors errors) {
+    public String processDesign(@Valid  Taco design, Errors errors) {
         if (errors.hasErrors()) {
             return "design";
         }
