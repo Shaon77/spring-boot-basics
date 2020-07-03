@@ -2,6 +2,7 @@ package org.shaon.basics.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.shaon.basics.data.IngredientRepository;
+import org.shaon.basics.data.TacoRepository;
 import org.shaon.basics.models.Ingredient;
 import org.shaon.basics.models.Ingredient.Type;
 import org.shaon.basics.models.Order;
@@ -24,16 +25,24 @@ import java.util.stream.Collectors;
 public class DesignTacoController {
 
     private final IngredientRepository ingredientRepo;
+    private TacoRepository designRepo;
 
     @Autowired
-    public DesignTacoController(IngredientRepository ingredientRepo) {
+    public DesignTacoController(
+            IngredientRepository ingredientRepo,
+            TacoRepository designRepo) {
         this.ingredientRepo = ingredientRepo;
+        this.designRepo = designRepo;
     }
 
     @ModelAttribute(name = "order")
     public Order order() {
-        return new Order();
+        Order order = new Order();
+        List<Taco> tacos = new ArrayList<>();
+        order.setTacos(tacos);
+        return order;
     }
+
     @ModelAttribute(name = "taco")
     public Taco taco() {
         return new Taco();
@@ -66,16 +75,18 @@ public class DesignTacoController {
     }
 
     @PostMapping
-    public String processDesign(@Valid  Taco design, Errors errors) {
+    public String processDesign(@Valid Taco design, Errors errors,
+                                @ModelAttribute Order order ) {
+
         if (errors.hasErrors()) {
             return "design";
         }
 
-        System.out.println(design);
-//      Save the taco design...
-//      We'll do this in chapter 3
-        log.info("Processing design: " + design);
+        Taco saved = designRepo.save(design);
+        order.addDesign(saved);
+
         return "redirect:/orders/current";
+
     }
 
 
